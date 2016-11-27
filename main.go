@@ -28,14 +28,20 @@ func parseOpts() {
 
 func readFile(filename string) []byte {
 	contents, err := ioutil.ReadFile(filename)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	check(err)
 	return contents
 }
 
 func writeFile(filename string, contents []byte) {
+	err := ioutil.WriteFile(filename, contents, 0644)
+	check(err)
+}
+
+func check(err error) {
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -44,9 +50,9 @@ func main() {
 	source := readFile(opts.Files.Input)
 	template := readFile(opts.Template)
 
-	html := Markdown2HTML(source)
-	slides := HTML2Impress(html)
-	outcome := InsertSlides(slides, template)
+	slides := Markdown2HTML(source)
+	outcome, err := InsertSlides(slides, template)
+	check(err)
 
 	writeFile(opts.Files.Output, outcome)
 }

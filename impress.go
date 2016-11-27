@@ -1,20 +1,30 @@
 package main
 
-import "bytes"
+import (
+	"bytes"
+	"text/template"
+)
 
-var slideTemplate []byte = []byte("<div class=\"slide\">\n{{}}\n</div>")
-var slidePlaceholder []byte = []byte("{{}}")
-
-func HTML2Impress(input [][]byte) [][]byte {
-	output := make([][]byte, len(input))
-
-	for i, slide := range input {
-		output[i] = bytes.Replace(slideTemplate, slidePlaceholder, slide, 1)
+func InsertSlides(slides [][]byte, tmplt []byte) ([]byte, error) {
+	t, err := template.New("presentation").Parse(string(tmplt))
+	if err != nil {
+		return nil, err
 	}
 
-	return output
+	var output bytes.Buffer
+	params := struct{ Slides []string }{byteArrToStringArr(slides)}
+	err = t.Execute(&output, params)
+	if err != nil {
+		return nil, err
+	}
+
+	return output.Bytes(), nil
 }
 
-func InsertSlides(slides [][]byte, template []byte) []byte {
-	return []byte("")
+func byteArrToStringArr(input [][]byte) []string {
+	strings := make([]string, len(input))
+	for i, bytes := range input {
+		strings[i] = string(bytes)
+	}
+	return strings
 }
